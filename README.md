@@ -2,6 +2,8 @@
 
 Designed to work on **Raspberry Pi** (arm) using as base image alpine linux (very little size).
 
+Forked from https://github.com/sdelrio/rpi-hostap, difference is that device which need Internet connection and don't have WiFi can be connected to Ethernet port of RPi too. Feature can be enabled by setting `ETHERNET_IP` variable (static IP address which will be applied to RPi Ethernet port)
+
 # Idea
 
 
@@ -61,6 +63,7 @@ sudo docker run -d -t \
   -e SUBNET=192.168.254.0 \
   -e WPA_PASSPHRASE=passw0rd \
   -e OUTGOINGS=eth0 \
+  -e ETHERNET_IP=192.168.255.3 \
   --privileged \
   --net host \
   sdelrio/rpi-hostap:latest
@@ -88,16 +91,18 @@ root     22619  0.0  0.4   6616  3700 ?        Ss   22:04   0:00 /sbin/wpa_suppl
 
 ## Environment Variables
 
-| Name            | Required | Description                    | Default Value |
-|:---------------:|:--------:|:------------------------------:|:-------------:|
-| INTERFACE       | true     | The wireless interface         |               |
-| CHANNEL         | false    | WiFi Channel to use            | 11            |
-| SSID            | false    | WiFi Name                      | raspberry     |
-| AP\_ADDR        | false    | Access Point IP Address        | 192.168.254.1 |
-| SUBNET          | false    | WiFi network subnet            | 192.168.254.0 |
-| WPA\_PASSPHRASE | false    | WiFi Password                  | passw0rd      |
-| OUTGOINGS       | false    | Interfaces to external traffic |               |
-| HW\_MODE        | false    | Hardware protocol              | g             |
+| Name            | Required | Description                                          | Default Value |
+|:---------------:|:--------:|:----------------------------------------------------:|:-------------:|
+| INTERFACE       | true     | The wireless interface                               |               |
+| CHANNEL         | false    | WiFi Channel to use                                  | 11            |
+| SSID            | false    | WiFi Name                                            | raspberry     |
+| AP\_ADDR        | false    | Access Point IP Address                              | 192.168.254.1 |
+| SUBNET          | false    | WiFi network subnet                                  | 192.168.254.0 |
+| WPA\_PASSPHRASE | false    | WiFi Password                                        | passw0rd      |
+| OUTGOINGS       | false    | Interfaces to external traffic                       |               |
+| HW\_MODE        | false    | Hardware protocol                                    | g             |
+| ETHERNET\_IP    | false    | Static IP address of RPi hardware Ethernet port      |               |
+| ETHERNET        | false    | Interface of hardware Ethernet port                  | eth0          |
 
 # Todo
 

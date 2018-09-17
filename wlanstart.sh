@@ -22,6 +22,8 @@ true ${SSID:=raspberry}
 true ${CHANNEL:=11}
 true ${WPA_PASSPHRASE:=passw0rd}
 true ${HW_MODE:=g}
+# Interface of RPi hardware ethernet port
+true ${ETHERNET:=eth0}
 
 if [ ! -f "/etc/hostapd.conf" ] ; then
     cat > "/etc/hostapd.conf" <<EOF
@@ -87,6 +89,14 @@ if [ "${OUTGOINGS}" ] ; then
 
       iptables -D FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
       iptables -A FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT
+      
+      if [ "${ETHERNET_IP}" ] ; then
+         iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
+         iptables -t nat -A POSTROUTING -s ${ETHERNET_IP} -o ${int} -j MASQUERADE
+         iptables -D FORWARD -i ${ETHERNET_IP} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
+         iptables -A FORWARD -i ${ETHERNET_IP} -o ${int} -j ACCEPT
+      fi
+      
    done
 else
    echo "Setting iptables for outgoing traffics on all interfaces..."
@@ -99,6 +109,14 @@ else
 
    iptables -D FORWARD -i ${INTERFACE} -j ACCEPT > /dev/null 2>&1 || true
    iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
+   
+   if [ "${ETHERNET_IP}" ] ; then
+      iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -j MASQUERADE > /dev/null 2>&1 || true
+      iptables -t nat -A POSTROUTING -s ${ETHERNET_IP} -j MASQUERADE
+      iptables -D FORWARD -i ${ETHERNET_IP} -j ACCEPT > /dev/null 2>&1 || true
+      iptables -A FORWARD -i ${ETHERNET_IP} -j ACCEPT
+   fi
+   
 fi
 
 echo "Configuring DHCP server .."
@@ -111,6 +129,14 @@ subnet ${SUBNET} netmask 255.255.255.0 {
   range ${SUBNET::-1}100 ${SUBNET::-1}200;
 }
 EOF
+
+if [ "${ETHERNET_IP}" ] ; then
+    cat >> "/etc/dhcpd.conf" <<EOF
+    interface ${ETHERNET}
+    static ip_address=${ETHERNET_IP}/24
+    static routers=${ETHERNET_IP}
+EOF
+fi
 
 echo "Starting DHCP server .."
 dhcpd ${INTERFACE}
@@ -138,13 +164,23 @@ if [ "${OUTGOINGS}" ] ; then
       iptables -D FORWARD -i ${int} -o ${INTERFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
 
       iptables -D FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
+      
+      if [ "${ETHERNET_IP}" ] ; then
+        iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
+        iptables -D FORWARD -i ${ETHERNET_IP} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
+      fi
    done
 else
-   echo "Setting iptables for outgoing traffics on all interfaces..."
+   echo "Removing iptables for outgoing traffics on all interfaces..."
 
    iptables -t nat -D POSTROUTING -s ${SUBNET}/24 -j MASQUERADE > /dev/null 2>&1 || true
 
    iptables -D FORWARD -o ${INTERFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
 
    iptables -D FORWARD -i ${INTERFACE} -j ACCEPT > /dev/null 2>&1 || true
+   
+   if [ "${ETHERNET_IP}" ] ; then
+     iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -j MASQUERADE > /dev/null 2>&1 || true
+     iptables -D FORWARD -i ${ETHERNET_IP} -j ACCEPT > /dev/null 2>&1 || true 
+   fi
 fi
