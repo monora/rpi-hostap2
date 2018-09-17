@@ -75,6 +75,10 @@ done
 cat /proc/sys/net/ipv4/ip_dynaddr
 cat /proc/sys/net/ipv4/ip_forward
 
+if [ "${ETHERNET_IP}" ] ; then
+    ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" 
+fi
+
 if [ "${OUTGOINGS}" ] ; then
    ints="$(sed 's/,\+/ /g' <<<"${OUTGOINGS}")"
    for int in ${ints}
@@ -91,10 +95,10 @@ if [ "${OUTGOINGS}" ] ; then
       iptables -A FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT
       
       if [ "${ETHERNET_IP}" ] ; then
-         iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
-         iptables -t nat -A POSTROUTING -s ${ETHERNET_IP} -o ${int} -j MASQUERADE
-         iptables -D FORWARD -i ${ETHERNET_IP} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
-         iptables -A FORWARD -i ${ETHERNET_IP} -o ${int} -j ACCEPT
+         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
+         iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE
+         iptables -D FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
+         iptables -A FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT
       fi
       
    done
@@ -111,10 +115,10 @@ else
    iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
    
    if [ "${ETHERNET_IP}" ] ; then
-      iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -j MASQUERADE > /dev/null 2>&1 || true
-      iptables -t nat -A POSTROUTING -s ${ETHERNET_IP} -j MASQUERADE
-      iptables -D FORWARD -i ${ETHERNET_IP} -j ACCEPT > /dev/null 2>&1 || true
-      iptables -A FORWARD -i ${ETHERNET_IP} -j ACCEPT
+      iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
+      iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE
+      iptables -D FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT > /dev/null 2>&1 || true
+      iptables -A FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT
    fi
    
 fi
@@ -166,8 +170,8 @@ if [ "${OUTGOINGS}" ] ; then
       iptables -D FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
       
       if [ "${ETHERNET_IP}" ] ; then
-        iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
-        iptables -D FORWARD -i ${ETHERNET_IP} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
+        iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
+        iptables -D FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
       fi
    done
 else
@@ -180,7 +184,7 @@ else
    iptables -D FORWARD -i ${INTERFACE} -j ACCEPT > /dev/null 2>&1 || true
    
    if [ "${ETHERNET_IP}" ] ; then
-     iptables -t nat -D POSTROUTING -s ${ETHERNET_IP} -j MASQUERADE > /dev/null 2>&1 || true
-     iptables -D FORWARD -i ${ETHERNET_IP} -j ACCEPT > /dev/null 2>&1 || true 
+     iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
+     iptables -D FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT > /dev/null 2>&1 || true 
    fi
 fi
