@@ -1,8 +1,8 @@
 FROM jonaskello/rpi-alpine-scratch-qemu
 
-MAINTAINER Sergio R. <sdelrio@users.noreply.github.com>
+MAINTAINER Pavel Serikov <pavelsro@users.noreply.github.com>
 
-ENV VERSION 0.30
+ENV VERSION 0.40
 
 RUN apk update && apk add bash hostapd iptables dhcp && rm -rf /var/cache/apk/*
 RUN echo "" > /var/lib/dhcp/dhcpd.leases

@@ -132,9 +132,9 @@ EOF
 
 if [ "${ETHERNET_IP}" ] ; then
     cat >> "/etc/dhcpd.conf" <<EOF
-    interface ${ETHERNET}
-    static ip_address=${ETHERNET_IP}/24
-    static routers=${ETHERNET_IP}
+interface ${ETHERNET}
+static ip_address=${ETHERNET_IP}/24
+static routers=${ETHERNET_IP}
 EOF
 fi
 

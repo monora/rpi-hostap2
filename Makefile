@@ -1,4 +1,4 @@
-IMGNAME = rpi-hostap
+IMGNAME = rpi-hostap2
 VERSION = $(shell grep "ENV VERSION" Dockerfile| awk 'NF>1{print $$NF}')
 SUBNET  = 192.168.254.0
 APADDR  = 192.168.254.1
@@ -67,9 +67,9 @@ clean:
 	@docker rmi $(IMGNAME):$(VERSION)
 taglatest:
 	docker tag -f $(IMGNAME):$(VERSION) $(IMGNAME):lastest
-	docker tag -f $(IMGNAME):$(VERSION) sdelrio/$(IMGNAME):$(VERSION)
-	docker tag -f $(IMGNAME):$(VERSION) sdelrio/$(IMGNAME):latest
+	docker tag -f $(IMGNAME):$(VERSION) pavelsr/$(IMGNAME):$(VERSION)
+	docker tag -f $(IMGNAME):$(VERSION) pavelsr/$(IMGNAME):latest
 push:
-	docker push sdelrio/$(IMGNAME)
-	docker push sdelrio/$(IMGNAME):$(VERSION)
+	docker push pavelsr/$(IMGNAME)
+	docker push pavelsr/$(IMGNAME):$(VERSION)
 release: taglatest push
