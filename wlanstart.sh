@@ -138,8 +138,17 @@ subnet ${SUBNET} netmask 255.255.255.0 {
 }
 EOF
 
+# Changing IP address to static
 if [ "${ETHERNET_IP}" ] ; then
     ifconfig ${ETHERNET} ${ETHERNET_IP} netmask 255.255.255.0 up
+    GATEWAY_IP="$(ifdata -pa eth1)"
+    route add default gw ${GATEWAY_IP}
+
+cat >> "/etc/resolv.conf" <<EOF
+    nameserver ${PRI_DNS}
+    nameserver ${SEC_DNS}
+EOF
+
 fi
 
 echo "Starting DHCP server .."
