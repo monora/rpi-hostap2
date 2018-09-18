@@ -1,4 +1,4 @@
-FROM jonaskello/rpi-alpine-scratch-qemu
+FROM alpine
 
 MAINTAINER Pavel Serikov <pavelsro@users.noreply.github.com>
 
