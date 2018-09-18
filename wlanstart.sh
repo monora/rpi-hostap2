@@ -77,6 +77,14 @@ cat /proc/sys/net/ipv4/ip_forward
 
 if [ "${ETHERNET_IP}" ] ; then
     ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" 
+    ifconfig ${ETHERNET} ${ETHERNET_IP} netmask 255.255.255.0 up
+    # GATEWAY_IP="$(ifdata -pa eth1)"
+    # route add default gw ${GATEWAY_IP}
+
+    cat >> "/etc/resolv.conf" <<EOF
+nameserver ${PRI_DNS}
+nameserver ${SEC_DNS}
+EOF
 fi
 
 if [ "${OUTGOINGS}" ] ; then
@@ -138,18 +146,6 @@ subnet ${SUBNET} netmask 255.255.255.0 {
 }
 EOF
 
-# Changing IP address to static
-if [ "${ETHERNET_IP}" ] ; then
-    ifconfig ${ETHERNET} ${ETHERNET_IP} netmask 255.255.255.0 up
-    # GATEWAY_IP="$(ifdata -pa eth1)"
-    # route add default gw ${GATEWAY_IP}
-
-cat >> "/etc/resolv.conf" <<EOF
-    nameserver ${PRI_DNS}
-    nameserver ${SEC_DNS}
-EOF
-
-fi
 
 echo "Starting DHCP server .."
 dhcpd ${INTERFACE}
@@ -180,6 +176,7 @@ if [ "${OUTGOINGS}" ] ; then
       
       if [ "${ETHERNET_IP}" ] ; then
         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
+        iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
         iptables -D FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
       fi
    done
@@ -194,6 +191,7 @@ else
    
    if [ "${ETHERNET_IP}" ] ; then
      iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
+     iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
      iptables -D FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT > /dev/null 2>&1 || true 
    fi
 fi
