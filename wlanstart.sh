@@ -139,11 +139,7 @@ subnet ${SUBNET} netmask 255.255.255.0 {
 EOF
 
 if [ "${ETHERNET_IP}" ] ; then
-    cat > "/etc/dhcpcd.conf" <<EOF
-interface ${ETHERNET}
-static ip_address=${ETHERNET_IP}/24
-static routers=${ETHERNET_IP}
-EOF
+    ifconfig ${ETHERNET} ${ETHERNET_IP} netmask 255.255.255.0 up
 fi
 
 echo "Starting DHCP server .."
