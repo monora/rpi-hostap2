@@ -97,6 +97,8 @@ if [ "${OUTGOINGS}" ] ; then
       if [ "${ETHERNET_IP}" ] ; then
          iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
          iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE
+         iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
+         iptables -A FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT 
          iptables -D FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
          iptables -A FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT
       fi
@@ -117,6 +119,8 @@ else
    if [ "${ETHERNET_IP}" ] ; then
       iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
       iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE
+      iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
+      iptables -A FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT 
       iptables -D FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT > /dev/null 2>&1 || true
       iptables -A FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT
    fi
@@ -135,7 +139,7 @@ subnet ${SUBNET} netmask 255.255.255.0 {
 EOF
 
 if [ "${ETHERNET_IP}" ] ; then
-    cat >> "/etc/dhcpd.conf" <<EOF
+    cat > "/etc/dhcpcd.conf" <<EOF
 interface ${ETHERNET}
 static ip_address=${ETHERNET_IP}/24
 static routers=${ETHERNET_IP}
