@@ -79,7 +79,7 @@ cat /proc/sys/net/ipv4/ip_forward
 # Setup static ip and routes
 if [ "${ETHERNET_IP}" ] ; then
     #ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" 
-    ip addr flush dev eth0
+    ip addr flush dev ${ETHERNET}
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
     
     # GATEWAY_IP="$(ifdata -pa eth1)"
