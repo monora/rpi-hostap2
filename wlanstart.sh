@@ -24,6 +24,7 @@ true ${WPA_PASSPHRASE:=passw0rd}
 true ${HW_MODE:=g}
 # Interface of RPi hardware ethernet port
 true ${ETHERNET:=eth0}
+true ${GW_INTERFACE:=eth1}
 
 if [ ! -f "/etc/hostapd.conf" ] ; then
     cat > "/etc/hostapd.conf" <<EOF
@@ -75,11 +76,18 @@ done
 cat /proc/sys/net/ipv4/ip_dynaddr
 cat /proc/sys/net/ipv4/ip_forward
 
+# Setup static ip and routes
 if [ "${ETHERNET_IP}" ] ; then
-    ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" 
-    ifconfig ${ETHERNET} ${ETHERNET_IP} netmask 255.255.255.0 up
+    #ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" 
+    ip addr flush dev eth0
+    ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
+    
     # GATEWAY_IP="$(ifdata -pa eth1)"
+    GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
+    
     # route add default gw ${GATEWAY_IP}
+    ip route add default via ${GATEWAY_IP} dev ${ETHERNET}
+    # ip route add ${ETHERNET_SUBNET} via ${GATEWAY_IP}
 
     cat >> "/etc/resolv.conf" <<EOF
 nameserver ${PRI_DNS}
