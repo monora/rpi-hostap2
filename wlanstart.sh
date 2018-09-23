@@ -82,7 +82,7 @@ if [ "${ETHERNET_IP}" ] ; then
     ip addr flush dev ${ETHERNET}
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
     # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
-    GATEWAY_IP="$(ip a show eth1 | grep -o --regexp="inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
+    GATEWAY_IP="$(ip a show eth1 | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
     ip route add default via ${GATEWAY_IP}
     echo "Added default route via ${GATEWAY_IP}"
 fi
