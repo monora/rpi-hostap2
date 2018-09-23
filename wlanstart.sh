@@ -76,17 +76,15 @@ done
 cat /proc/sys/net/ipv4/ip_dynaddr
 cat /proc/sys/net/ipv4/ip_forward
 
-# Setup static ip and routes
 if [ "${ETHERNET_IP}" ] ; then
+    echo "Setting static ip, DNS and routes for ${ETHERNET}..."
     ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" # needed for iptables, default mask is 24
     ip addr flush dev ${ETHERNET}
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
-    GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
-    ip route add default via ${GATEWAY_IP} dev ${ETHERNET}
-    cat >> "/etc/resolv.conf" <<EOF
-nameserver ${PRI_DNS}
-nameserver ${SEC_DNS}
-EOF
+    # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
+    GATEWAY_IP="$(ip a show eth1 | grep -o --regexp="inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
+    ip route add default via ${GATEWAY_IP}
+    echo "Added default route via ${GATEWAY_IP}"
 fi
 
 if [ "${OUTGOINGS}" ] ; then
@@ -105,8 +103,9 @@ if [ "${OUTGOINGS}" ] ; then
       iptables -A FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT
       
       if [ "${ETHERNET_IP}" ] ; then
-         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
+         echo " ${int} <-> ${ETHERNET} (${ETHERNET_SUBNET})"
          iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE
+         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
          iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
          iptables -A FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT 
          iptables -D FORWARD -i ${ETHERNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
@@ -127,6 +126,7 @@ else
    iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
    
    if [ "${ETHERNET_IP}" ] ; then
+      echo "Setting NAT and packet forwarding between all interfaces and ${ETHERNET} (${ETHERNET_SUBNET})"
       iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
       iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE
       iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
@@ -169,14 +169,12 @@ if [ "${OUTGOINGS}" ] ; then
    for int in ${ints}
    do
       echo "Removing iptables for outgoing traffics on ${int}..."
-
       iptables -t nat -D POSTROUTING -s ${SUBNET}/24 -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
-
       iptables -D FORWARD -i ${int} -o ${INTERFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
-
       iptables -D FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
       
       if [ "${ETHERNET_IP}" ] ; then
+        echo " ${int} <-> ${ETHERNET} (${ETHERNET_SUBNET})"
         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
         iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
         iptables -D FORWARD -i ${ETHERNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
@@ -184,14 +182,12 @@ if [ "${OUTGOINGS}" ] ; then
    done
 else
    echo "Removing iptables for outgoing traffics on all interfaces..."
-
    iptables -t nat -D POSTROUTING -s ${SUBNET}/24 -j MASQUERADE > /dev/null 2>&1 || true
-
    iptables -D FORWARD -o ${INTERFACE} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
-
    iptables -D FORWARD -i ${INTERFACE} -j ACCEPT > /dev/null 2>&1 || true
    
    if [ "${ETHERNET_IP}" ] ; then
+     echo "Removing NAT and packet forwarding between all interfaces and ${ETHERNET} (${ETHERNET_SUBNET})"
      iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
      iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
      iptables -D FORWARD -i ${ETHERNET} -j ACCEPT > /dev/null 2>&1 || true 

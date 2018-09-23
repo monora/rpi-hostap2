@@ -2,7 +2,7 @@ FROM arm32v6/alpine
 
 MAINTAINER Pavel Serikov <pavelsro@users.noreply.github.com>
 
-ENV VERSION 1.0
+ENV VERSION 1.1
 
 RUN apk update && apk add bash hostapd iptables dhcp && rm -rf /var/cache/apk/*
 RUN echo "" > /var/lib/dhcp/dhcpd.leases
