@@ -66,7 +66,7 @@ sudo docker run -d -t \
   -e ETHERNET_IP=192.168.255.3 \
   --privileged \
   --net host \
-  sdelrio/rpi-hostap:latest
+  pavelsr/rpi-hostap2:latest
 ```
 
 But before this, hostap usually requires that wlan0 interface to be already up, so before `docker run` take the interface up:
