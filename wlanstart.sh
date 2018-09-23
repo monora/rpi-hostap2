@@ -13,6 +13,8 @@ if [ ! "${INTERFACE}" ] ; then
     exit 1
 fi
 
+echo "### Setup started" 
+
 # Default values
 true ${SUBNET:=192.168.254.0}
 true ${AP_ADDR:=192.168.254.1}
@@ -166,6 +168,8 @@ trap 'true' SIGHUP
 echo "Starting HostAP daemon ..."
 /usr/sbin/hostapd /etc/hostapd.conf &
 
+echo "### Setup finished" 
+
 wait $!
 
 echo "Removing iptables rules..."
@@ -198,4 +202,9 @@ else
      iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
      iptables -D FORWARD -i ${ETHERNET} -j ACCEPT > /dev/null 2>&1 || true 
    fi
+fi
+
+if [ "${FIX_DEFAULT_GW}" ] ; then
+    echo "Removing all added gateways..."
+    ip route del default
 fi
