@@ -22,9 +22,8 @@ true ${SSID:=raspberry}
 true ${CHANNEL:=11}
 true ${WPA_PASSPHRASE:=passw0rd}
 true ${HW_MODE:=g}
-# Interface of RPi hardware ethernet port
-true ${ETHERNET:=eth0}
-true ${GW_INTERFACE:=eth1}
+true ${ETHERNET:=eth0}     # interface of RPi hardware ethernet port, used for iptables
+true ${MODEM_INTERFACE:=eth1} # used to get MODEM_IP, assuming that network mask is 24 and IP is always HostMin
 
 if [ ! -f "/etc/hostapd.conf" ] ; then
     cat > "/etc/hostapd.conf" <<EOF
@@ -77,14 +76,15 @@ cat /proc/sys/net/ipv4/ip_dynaddr
 cat /proc/sys/net/ipv4/ip_forward
 
 if [ "${ETHERNET_IP}" ] ; then
-    echo "Setting static ip, DNS and routes for ${ETHERNET}..."
-    ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" # needed for iptables, default mask is 24
+    echo "Setting static ip ${ETHERNET_IP} for ${ETHERNET}..."
+    ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" # needed further for iptables, default mask is 24
     ip addr flush dev ${ETHERNET}
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
     # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
-    GATEWAY_IP="$(ip a show eth1 | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
-    ip route add default via ${GATEWAY_IP}
-    echo "Added default route via ${GATEWAY_IP}"
+    IP_IN_MODEM_NET="$(ip a show ${MODEM_INTERFACE} | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
+    MODEM_IP="${IP_IN_MODEM_NET%.*}.1"  # assuming is always HostMin
+    ip route add default via ${MODEM_IP}
+    echo "Added default route via ${MODEM_IP}"
 fi
 
 if [ "${OUTGOINGS}" ] ; then

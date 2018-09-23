@@ -50,9 +50,15 @@ country ES: DFS-ETSI
 
 # Build / run
 
+Minimal setup, from docker hub:
+
+```
+sudo docker run -d -t --privileged --net host -e INTERFACE=wlan0 -e ETHERNET_IP=192.168.255.3 -e OUTGOINGS=eth1,tun0 pavelsr/rpi-hostap2
+```
+
 For modification, testings, etc.. there is already a `Makefile`. So you can `make run` to start a sample ssid with a simple password.
 
-I've already uploaded the image to docker hubs, so you can run it from ther like this:
+I've already uploaded the image to docker hub, so you can run it from ther like this:
 
 ```
 sudo docker run -d -t \
@@ -103,6 +109,7 @@ root     22619  0.0  0.4   6616  3700 ?        Ss   22:04   0:00 /sbin/wpa_suppl
 | HW\_MODE        | false    | Hardware protocol                                    | g             |
 | ETHERNET\_IP    | false    | Static IP address of RPi hardware Ethernet port      |               |
 | ETHERNET        | false    | Interface of hardware Ethernet port                  | eth0          |
+| MODEM_INTERFACE | false    | Interface of USB modem                               | eth1          |
 
 # Todo
 
