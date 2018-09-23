@@ -84,6 +84,10 @@ if [ "${ETHERNET_IP}" ] ; then
     ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" # needed further for iptables, default mask is 24
     ip addr flush dev ${ETHERNET}
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
+    cat >> "/etc/resolv.conf" <<EOF
+nameserver ${PRI_DNS}
+nameserver ${SEC_DNS}
+EOF
     
     if [ "${FIX_DEFAULT_GW}" = true ] ; then
         # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
