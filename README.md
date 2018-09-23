@@ -53,8 +53,10 @@ country ES: DFS-ETSI
 Minimal setup, from docker hub:
 
 ```
-sudo docker run -d -t --privileged --net host -e INTERFACE=wlan0 -e ETHERNET_IP=192.168.255.3 -e OUTGOINGS=eth1,tun0 pavelsr/rpi-hostap2
+sudo docker run -d -t --privileged --net host --name rpi-hostap -e INTERFACE=wlan0 -e ETHERNET_IP=192.168.255.3 -e OUTGOINGS=eth1,tun0 pavelsr/rpi-hostap2
 ```
+
+If everything works fine, you can run same with `--restart=always` option
 
 For modification, testings, etc.. there is already a `Makefile`. So you can `make run` to start a sample ssid with a simple password.
 
