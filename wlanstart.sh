@@ -204,7 +204,7 @@ else
    fi
 fi
 
-if [ "${FIX_DEFAULT_GW}" ] ; then
+if [ "${FIX_DEFAULT_GW}" = true ] ; then
     echo "Removing all added gateways..."
-    ip route del default
+    ip route del default via ${MODEM_IP}
 fi
