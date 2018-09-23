@@ -82,10 +82,10 @@ if [ "${ETHERNET_IP}" ] ; then
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
     # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
     IP_IN_MODEM_NET="$(ip a show ${MODEM_INTERFACE} | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
+    echo "ip route add default via ${IP_IN_MODEM_NET} dev ${MODEM_INTERFACE}"
+    ip route add default via ${IP_IN_MODEM_NET} dev ${MODEM_INTERFACE}
     MODEM_IP="${IP_IN_MODEM_NET%.*}.1"  # assuming is always HostMin
-    echo "ip route add default via ${MODEM_IP} dev ${MODEM_INTERFACE}"
-    ip route add default via ${MODEM_IP} dev ${MODEM_INTERFACE}
-    echo "Added default route via ${MODEM_IP}"
+    echo "From now all outgoing traffic will go via ${MODEM_INTERFACE} (HostMin ${MODEM_IP})"
 fi
 
 if [ "${OUTGOINGS}" ] ; then
