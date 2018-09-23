@@ -109,8 +109,8 @@ if [ "${OUTGOINGS}" ] ; then
          iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE
          iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
          iptables -A FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT 
-         iptables -D FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
-         iptables -A FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT
+         iptables -D FORWARD -i ${ETHERNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
+         iptables -A FORWARD -i ${ETHERNET} -o ${int} -j ACCEPT
       fi
       
    done
@@ -131,8 +131,8 @@ else
       iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE
       iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
       iptables -A FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT 
-      iptables -D FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT > /dev/null 2>&1 || true
-      iptables -A FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT
+      iptables -D FORWARD -i ${ETHERNET} -j ACCEPT > /dev/null 2>&1 || true
+      iptables -A FORWARD -i ${ETHERNET} -j ACCEPT
    fi
    
 fi
@@ -179,7 +179,7 @@ if [ "${OUTGOINGS}" ] ; then
       if [ "${ETHERNET_IP}" ] ; then
         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
         iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
-        iptables -D FORWARD -i ${ETHERNET_SUBNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
+        iptables -D FORWARD -i ${ETHERNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
       fi
    done
 else
@@ -194,6 +194,6 @@ else
    if [ "${ETHERNET_IP}" ] ; then
      iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
      iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
-     iptables -D FORWARD -i ${ETHERNET_SUBNET} -j ACCEPT > /dev/null 2>&1 || true 
+     iptables -D FORWARD -i ${ETHERNET} -j ACCEPT > /dev/null 2>&1 || true 
    fi
 fi
