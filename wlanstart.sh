@@ -83,7 +83,8 @@ if [ "${ETHERNET_IP}" ] ; then
     # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
     IP_IN_MODEM_NET="$(ip a show ${MODEM_INTERFACE} | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
     MODEM_IP="${IP_IN_MODEM_NET%.*}.1"  # assuming is always HostMin
-    ip route add default via ${MODEM_IP}
+    echo "ip route add default via ${MODEM_IP} dev eth0"
+    ip route add default via ${MODEM_IP} dev eth0
     echo "Added default route via ${MODEM_IP}"
 fi
 
@@ -103,7 +104,7 @@ if [ "${OUTGOINGS}" ] ; then
       iptables -A FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT
       
       if [ "${ETHERNET_IP}" ] ; then
-         echo " ${int} <-> ${ETHERNET} (${ETHERNET_SUBNET})"
+         echo "+ETHERNET ${int} <-> ${ETHERNET} (${ETHERNET_SUBNET})"
          iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE
          iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
          iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
@@ -126,7 +127,7 @@ else
    iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
    
    if [ "${ETHERNET_IP}" ] ; then
-      echo "Setting NAT and packet forwarding between all interfaces and ${ETHERNET} (${ETHERNET_SUBNET})"
+      echo "+ETHERNET Setting NAT and packet forwarding between all interfaces and ${ETHERNET} (${ETHERNET_SUBNET})"
       iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
       iptables -t nat -A POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE
       iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
@@ -174,7 +175,7 @@ if [ "${OUTGOINGS}" ] ; then
       iptables -D FORWARD -i ${INTERFACE} -o ${int} -j ACCEPT > /dev/null 2>&1 || true
       
       if [ "${ETHERNET_IP}" ] ; then
-        echo " ${int} <-> ${ETHERNET} (${ETHERNET_SUBNET})"
+        echo "-ETHERNET ${int} <-> ${ETHERNET} (${ETHERNET_SUBNET})"
         iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -o ${int} -j MASQUERADE > /dev/null 2>&1 || true
         iptables -D FORWARD -i ${int} -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
         iptables -D FORWARD -i ${ETHERNET} -o ${int} -j ACCEPT > /dev/null 2>&1 || true    
@@ -187,7 +188,7 @@ else
    iptables -D FORWARD -i ${INTERFACE} -j ACCEPT > /dev/null 2>&1 || true
    
    if [ "${ETHERNET_IP}" ] ; then
-     echo "Removing NAT and packet forwarding between all interfaces and ${ETHERNET} (${ETHERNET_SUBNET})"
+     echo "-ETHERNET Removing NAT and packet forwarding between all interfaces and ${ETHERNET} (${ETHERNET_SUBNET})"
      iptables -t nat -D POSTROUTING -s ${ETHERNET_SUBNET} -j MASQUERADE > /dev/null 2>&1 || true
      iptables -D FORWARD -o ${ETHERNET} -m state --state RELATED,ESTABLISHED -j ACCEPT > /dev/null 2>&1 || true
      iptables -D FORWARD -i ${ETHERNET} -j ACCEPT > /dev/null 2>&1 || true 
