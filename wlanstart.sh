@@ -83,8 +83,8 @@ if [ "${ETHERNET_IP}" ] ; then
     # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
     IP_IN_MODEM_NET="$(ip a show ${MODEM_INTERFACE} | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
     MODEM_IP="${IP_IN_MODEM_NET%.*}.1"  # assuming is always HostMin
-    echo "ip route add default via ${MODEM_IP} dev eth0"
-    ip route add default via ${MODEM_IP} dev eth0
+    echo "ip route add default via ${MODEM_IP} dev ${MODEM_INTERFACE}"
+    ip route add default via ${MODEM_IP} dev ${MODEM_INTERFACE}
     echo "Added default route via ${MODEM_IP}"
 fi
 
