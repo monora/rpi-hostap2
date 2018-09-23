@@ -53,7 +53,7 @@ country ES: DFS-ETSI
 Minimal setup, from docker hub:
 
 ```
-sudo docker run -d -t --privileged --net host --name rpi-hostap -e INTERFACE=wlan0 -e ETHERNET_IP=192.168.255.3 -e OUTGOINGS=eth1,tun0 pavelsr/rpi-hostap2
+docker run -d -t --privileged --net host --name rpi-hostap --restart=always -e INTERFACE=wlan0 -e ETHERNET_IP=192.168.255.3 -e OUTGOINGS=eth1,tun0 pavelsr/rpi-hostap2
 ```
 
 If everything works fine, you can run same with `--restart=always` option
@@ -63,7 +63,7 @@ For modification, testings, etc.. there is already a `Makefile`. So you can `mak
 I've already uploaded the image to docker hub, so you can run it from ther like this:
 
 ```
-sudo docker run -d -t \
+docker run -d -t \
   -e INTERFACE=wlan0 \
   -e CHANNEL=6 \
   -e SSID=runssid \
