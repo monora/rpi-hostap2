@@ -84,15 +84,16 @@ if [ "${ETHERNET_IP}" ] ; then
     ETHERNET_SUBNET="${ETHERNET_IP%.*}.0/24" # needed further for iptables, default mask is 24
     ip addr flush dev ${ETHERNET}
     ip addr add "${ETHERNET_IP}/24" dev ${ETHERNET}
-fi
-
-if [ "${FIX_DEFAULT_GW}" = true ] ; then
-    # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
-    IP_IN_MODEM_NET="$(ip a show ${MODEM_INTERFACE} | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
-    MODEM_IP="${IP_IN_MODEM_NET%.*}.1"  # assuming is always HostMin
-    echo "ip route add default via ${MODEM_IP}"
-    ip route add default via ${MODEM_IP}
-    echo "From now all outgoing traffic will go via ${MODEM_INTERFACE} (${IP_IN_MODEM_NET}, HostMin ${MODEM_IP})"
+    
+    if [ "${FIX_DEFAULT_GW}" = true ] ; then
+        # GATEWAY_IP="$(ip a show ${GW_INTERFACE} | grep -Po 'inet \K[\d.]+')"
+        IP_IN_MODEM_NET="$(ip a show ${MODEM_INTERFACE} | grep -o -e "inet [0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}[\.][0-9]\{1,3\}" | awk '{print $2}')"
+        MODEM_IP="${IP_IN_MODEM_NET%.*}.1"  # assuming is always HostMin
+        echo "FIX_DEFAULT_GW: ip route add default via ${IP_IN_MODEM_NET} dev ${ETHERNET}"
+        ip route add default via ${IP_IN_MODEM_NET} dev ${ETHERNET}
+        echo "From now all outgoing traffic will go via ${MODEM_INTERFACE} (${IP_IN_MODEM_NET}, HostMin ${MODEM_IP})"
+    fi
+    
 fi
 
 if [ "${OUTGOINGS}" ] ; then
@@ -206,5 +207,5 @@ fi
 
 if [ "${FIX_DEFAULT_GW}" = true ] ; then
     echo "Removing all added gateways..."
-    ip route del default via ${MODEM_IP}
+    ip route del default via ${MODEM_IP} dev ${ETHERNET}
 fi
