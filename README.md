@@ -102,3 +102,7 @@ root     22619  0.0  0.4   6616  3700 ?        Ss   22:04   0:00 /sbin/wpa_suppl
 # Todo
 
 Improve README.md
+
+# INFO
+
+docker run --rm --entrypoint=/bin/bash -i -t --privileged --net host -e INTERFACE=wlan0 -e OUTGOINGS=eth0 rpi-hostap_rpiap

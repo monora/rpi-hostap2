@@ -1,0 +1,19 @@
+version: '3'
+
+# variables are defined in ./.env
+# https://www.home-assistant.io/docs/installation/docker/
+services:
+  rpiap:
+    container_name: rpi-ap
+    # restart: always
+    build: .
+    # image: sdelrio/rpi-hostap
+    network_mode: host
+    privileged: true
+    environment:
+      - INTERFACE=wlan0
+      # - AP_ADDR=192.168.1.1
+      # - SUBNET=192.168.254.0
+      - CHANNEL=13
+      - WPA_PASSPHRASE=${WPA_PASSPHRASE}
+      - OUTGOINGS=eth0
